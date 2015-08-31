@@ -9,8 +9,8 @@ import javax.swing.JFileChooser;
 
 public class Reader {
 
-	//A list of the files, each list has a list of values.
-	private List<List<Double>> informationAboutFiles = new ArrayList<List<Double>>();
+
+	private List<ReaderInformation> information = new ArrayList<ReaderInformation>();
 
 	/**
 	 * Accepts files to be passed through a GUI
@@ -30,45 +30,85 @@ public class Reader {
 			System.out.print(files[i] + " ");
 
 		}
-
-		readFile(files,to);
+		information.add(new ReaderInformation());
+		readFile(files,to,0);
 
 	}
 
 	/**
 	 * Accepts files to be passed through CLI
+	 * @param args
 	 * @param fileToOutput
 	 * @param fileToRead
 	 */
-	public Reader(List<Template_Object> to, String... fileToRead){
+	public Reader(List<Template_Object> to, String args, String... fileToRead){
 
-		File[] files = new File[fileToRead.length];
+		List<List<File>> filesForEach = new ArrayList<List<File>>();
 
-		for(int i = 0 ; i < files.length ; i ++){
-			files[i] = new File(fileToRead[i]);
+		File[] filesInDir = new File(args).listFiles();
+
+		for(int j = 0 ; j < fileToRead.length ; j ++){
+			filesForEach.add(new ArrayList<File>());
+			for(int i = 0 ; i < filesInDir.length ; i ++ ){
+
+				if(filesInDir[i].getName().contains(fileToRead[j])){
+					filesForEach.get(j).add(filesInDir[i]);
+				}
+			}
 		}
 
-		readFile(files,to);
+		for(int i = 0 ; i < filesForEach.size() ; i ++){
+			List<File> files = filesForEach.get(i);
+			File[] fileArray = new File[files.size()];
+			fileArray = files.toArray(fileArray);
+			information.add(new ReaderInformation());
+			readFile(fileArray,to, i);
+		}
+
+
+
 
 	}
 
 
-	private void readFile(File[] files, List<Template_Object> to){
+	private void readFile(File[] files, List<Template_Object> to, int informationValue){
 
 		for(int i = 0 ; i < files.length; i ++){
 
-			informationAboutFiles.add(Data_Retriever.getData(files[i], to));
+			information.get(informationValue).add(Data_Retriever.getData(files[i], to));
 
+		}
+	}
+
+
+
+	public class ReaderInformation{
+
+		//A list of the files, each list has a list of values.
+		private List<List<Double>> informationAboutFiles = new ArrayList<List<Double>>();
+
+
+
+		/**
+		 * Returning information about the files
+		 * @return
+		 */
+		public List<List<Double>> getInformation() {
+			return Collections.unmodifiableList(informationAboutFiles);
+		}
+
+
+
+		public void add(List<Double> data) {
+			informationAboutFiles.add(data);
 		}
 
 	}
 
-	/**
-	 * Returning information about the files
-	 * @return
-	 */
-	public List<List<Double>> getInformation() {
-		return Collections.unmodifiableList(informationAboutFiles);
+
+
+	public List<ReaderInformation> getInformation() {
+		return information;
 	}
 
 }
